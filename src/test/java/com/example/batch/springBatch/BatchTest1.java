@@ -1,25 +1,11 @@
 package com.example.batch.springBatch;
 
-import com.example.batch.springBatch.config.BatchConfig;
-import com.example.batch.springBatch.config.EntityDataConfig;
 import com.example.batch.springBatch.config.JobService;
+import com.example.batch.springBatch.domain.Coffee;
 import com.example.batch.springBatch.listner.CoffeeProcessorListener;
 import com.example.batch.springBatch.processor.CoffeeProcessor;
 import com.example.batch.springBatch.repos.CoffeeRepo;
 import jakarta.persistence.EntityManagerFactory;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.test.context.SpringBatchTest;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import com.example.batch.springBatch.config.JobService;
-import com.example.batch.springBatch.domain.Coffee;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
@@ -29,14 +15,14 @@ import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.JobRepositoryTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 @SpringBatchTest
 @SpringBootTest
@@ -46,7 +32,9 @@ import static org.mockito.Mockito.when;
         "spring.batch.job.enabled=false"
 })
 @ComponentScan(basePackages = {"com.example.batch.springBatch.repos", "com.example.batch.springBatch.listeners"})
-@ContextConfiguration(classes = {BatchTestConfig.class,JobService.class,CoffeeProcessor.class,CoffeeProcessorListener.class,PostGresConfig.class})
+@ContextConfiguration(classes = {BatchTestConfig.class,JobService.class,CoffeeProcessor.class,CoffeeProcessorListener.class,PostGresConfig.class,
+CoffeeRepo.class,Coffee.class})
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class BatchTest1 {
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;

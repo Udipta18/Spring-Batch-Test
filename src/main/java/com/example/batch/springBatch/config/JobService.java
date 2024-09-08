@@ -4,6 +4,7 @@ import com.example.batch.springBatch.domain.Coffee;
 import com.example.batch.springBatch.listner.CoffeeProcessorListener;
 import com.example.batch.springBatch.processor.CoffeeProcessor;
 import jakarta.persistence.EntityManagerFactory;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -15,7 +16,9 @@ import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteExcep
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.database.JpaItemWriter;
+import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
@@ -25,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -34,7 +38,7 @@ import java.util.Date;
 import java.util.Objects;
 
 
-@Configuration
+@Service
 @Slf4j
 public class JobService {
 
@@ -104,15 +108,25 @@ public class JobService {
 
 //    @Bean
 //    @StepScope
-    private FlatFileItemReader<Coffee> reader() {
+//    private FlatFileItemReader<Coffee> reader() {
+//        log.info("INSIDE READER");
+//        return new FlatFileItemReaderBuilder<Coffee>().name("coffeeItemReader")
+//                .resource(new ClassPathResource(fileInput))
+//                .delimited()
+//                .names(new String[]{"brand", "origin", "characteristics"})
+//                .fieldSetMapper(new BeanWrapperFieldSetMapper<Coffee>() {{
+//                    setTargetType(Coffee.class);
+//                }})
+//                .build();
+//    }
+
+    public JdbcCursorItemReader<Coffee> reader() {
         log.info("INSIDE READER");
-        return new FlatFileItemReaderBuilder<Coffee>().name("coffeeItemReader")
-                .resource(new ClassPathResource(fileInput))
-                .delimited()
-                .names(new String[]{"brand", "origin", "characteristics"})
-                .fieldSetMapper(new BeanWrapperFieldSetMapper<Coffee>() {{
-                    setTargetType(Coffee.class);
-                }})
+        return new JdbcCursorItemReaderBuilder<Coffee>()
+                .dataSource(postgresEntityManager.getDataSource())
+                .name("myEntityReader")
+                .sql("SELECT * FROM coffee")
+                .rowMapper(new BeanPropertyRowMapper<>(Coffee.class))
                 .build();
     }
 

@@ -14,8 +14,6 @@ import java.util.Optional;
 @EnableScheduling
 public class SpringBatchApplication {
 
-	@Autowired
-	 CoffeeRepo repo;
 
 	public static void main(String[] args) {
 

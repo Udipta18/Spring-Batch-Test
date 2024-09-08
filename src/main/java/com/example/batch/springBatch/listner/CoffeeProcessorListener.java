@@ -2,8 +2,6 @@ package com.example.batch.springBatch.listner;
 
 import com.example.batch.springBatch.domain.Coffee;
 import com.example.batch.springBatch.repos.CoffeeRepo;
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.ItemProcessListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +24,9 @@ public class CoffeeProcessorListener implements ItemProcessListener<Coffee,Coffe
     }
 
     @Override
-    @Transactional
+    //@Transactional
     public void afterProcess(Coffee item, Coffee result) {
-        coffeeRepo.save(item);
+        coffeeRepo.save(result);
         log.info("Inside after process");
     }
 

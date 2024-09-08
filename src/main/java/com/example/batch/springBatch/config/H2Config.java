@@ -1,10 +1,9 @@
-package com.example.batch.springBatch;
+package com.example.batch.springBatch.config;
+
 
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -20,43 +19,35 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-@TestConfiguration
+@Configuration
 @EnableJpaRepositories(
         basePackages = "com.example.batch.springBatch.repos",
         entityManagerFactoryRef = "postgresEntityManager",
         transactionManagerRef = "postgresTransactionManager"
 )
 @EntityScan(basePackages = {"com.example.batch.springBatch.domain"})
-public class PostGresConfig {
-
-    @Bean(name = "postgresDataSource")
-    public DataSource postgresDataSource(Environment env) {
+public class H2Config {
+    @Bean(name = "mySqlDataSource")
+    @Primary
+    public DataSource mySqlDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setUrl("jdbc:h2:mem:db2test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false");
+        dataSource.setUrl("jdbc:h2:mem:db2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false");
         dataSource.setUsername("sa");
-        dataSource.setPassword("password");
+        dataSource.setPassword("");
+
         return dataSource;
     }
 
     @Bean(name = "postgresEntityManager")
-    public LocalContainerEntityManagerFactoryBean postgresEntityManager(
-            @Qualifier("postgresDataSource") DataSource dataSource) {
-//        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-////        return builder
-////                .dataSource(dataSource)
-////                .packages("com.example.batch.springBatch.domain") // Replace with your entity package
-////                .persistenceUnit("postgresPU")
-////                .build();
-//         em.setDataSource(dataSource);
+    @Primary
+    public LocalContainerEntityManagerFactoryBean mySqlEntityManager(
+            @Qualifier("mySqlDataSource") DataSource dataSource, Environment env) {
+
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.example.batch.springBatch.domain"); // Package containing your Postgres entities
+        em.setPackagesToScan("com.example.batch.springBatch.domain");
 
-//        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-//        vendorAdapter.setDatabase(Database.POSTGRESQL);
-//        vendorAdapter.setGenerateDdl(true);
-//        em.setJpaVendorAdapter(vendorAdapter);
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setDatabase(Database.H2);
         vendorAdapter.setGenerateDdl(true);
@@ -69,16 +60,12 @@ public class PostGresConfig {
         em.setJpaPropertyMap(properties);
 
         return em;
-        // em.setPersistenceUnitName("postgresPU");
-         // Additional configurations if needed
-       //return em;
     }
 
     @Bean(name = "postgresTransactionManager")
-    public JpaTransactionManager postgresTransactionManager(
+    @Primary
+    public JpaTransactionManager transactionManager(
             @Qualifier("postgresEntityManager") EntityManagerFactory entityManagerFactory) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory);
-        return transactionManager;
+        return new JpaTransactionManager(entityManagerFactory);
     }
 }

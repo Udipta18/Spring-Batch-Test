@@ -25,6 +25,7 @@ import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -40,6 +41,7 @@ import java.util.Objects;
 
 @Service
 @Slf4j
+@ConditionalOnProperty(prefix = "spring.batch", name= "JobService")
 public class JobService {
 
     @Autowired
@@ -125,7 +127,7 @@ public class JobService {
         return new JdbcCursorItemReaderBuilder<Coffee>()
                 .dataSource(postgresEntityManager.getDataSource())
                 .name("myEntityReader")
-                .sql("SELECT * FROM coffee")
+                .sql("SELECT * FROM Spring_Batch_Two_DataBase.coffee")
                 .rowMapper(new BeanPropertyRowMapper<>(Coffee.class))
                 .build();
     }

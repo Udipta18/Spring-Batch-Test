@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
 import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.JobRepositoryTestUtils;
@@ -32,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
         "spring.batch.job.enabled=false"
 })
 @ComponentScan(basePackages = {"com.example.batch.springBatch.repos", "com.example.batch.springBatch.listeners"})
-@ContextConfiguration(classes = {BatchTestConfig.class,JobService.class,CoffeeProcessor.class,CoffeeProcessorListener.class,PostGresConfig.class,
+@ContextConfiguration(classes = {BatchTestConfig.class,JobService.class,CoffeeProcessor.class,CoffeeProcessorListener.class,MysqlConfig.class,
 CoffeeRepo.class,Coffee.class})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class BatchTest1 {
@@ -119,22 +120,87 @@ public class BatchTest1 {
     @Test
     void testReader() throws Exception {
         // Arrange
-        JobExecution jobExecution = jobLauncherTestUtils.launchStep("step1");
-        StepExecution stepExecution = jobExecution.getStepExecutions().iterator().next();
+//        JobExecution jobExecution = jobLauncherTestUtils.launchStep("step1");
+//        StepExecution stepExecution = jobExecution.getStepExecutions().iterator().next();
+//
+//        FlatFileItemReader<Coffee> reader = (FlatFileItemReader<Coffee>) stepExecution
+//                .getExecutionContext()
+//                .get("coffeeItemReader");
+//
+//        // Act & Assert
+//        assertNotNull(reader);
+//        reader.open(new ExecutionContext());
+//
+//        Coffee coffee = reader.read();
+//        assertNotNull(coffee);
+//        assertEquals("Brand1", coffee.getBrand());
+//        assertEquals("Origin1", coffee.getOrigin());
+//        assertEquals("Characteristics1", coffee.getCharacteristics());
 
-        FlatFileItemReader<Coffee> reader = (FlatFileItemReader<Coffee>) stepExecution
-                .getExecutionContext()
-                .get("coffeeItemReader");
+//        JobExecution jobExecution = jobLauncherTestUtils.launchStep("step1");
+//
+//        // Diagnostic: Print job execution status
+//        System.out.println("Job Execution Status: " + jobExecution.getStatus());
+//
+//        // Diagnostic: Print step executions
+//        for (StepExecution execution : jobExecution.getStepExecutions()) {
+//            System.out.println("Step Name: " + execution.getStepName());
+//            System.out.println("Step Status: " + execution.getStatus());
+//            System.out.println("Read Count: " + execution.getReadCount());
+//            System.out.println("Write Count: " + execution.getWriteCount());
+//        }
+//
+//        StepExecution stepExecution = jobExecution.getStepExecutions().iterator().next();
+//
+//        // Diagnostic: Print execution context keys
+//        System.out.println("Execution Context Keys: " + stepExecution.getExecutionContext().entrySet());
+//
+//        Object readerObject = stepExecution.getExecutionContext().get("myEntityReader");
+//
+//        // Diagnostic: Print reader object
+//        System.out.println("Reader Object: " + readerObject);
+//
+//        // Assert
+//        assertNotNull(readerObject, "Reader should not be null");
+//        assertTrue(readerObject instanceof JdbcCursorItemReader, "Reader should be an instance of JdbcCursorItemReader");
+//
+//        JdbcCursorItemReader<Coffee> reader = (JdbcCursorItemReader<Coffee>) readerObject;
+//
+//        // Act & Assert
+//        reader.open(new ExecutionContext());
+//
+//        Coffee coffee = reader.read();
+//        assertNotNull(coffee, "First coffee item should not be null");
+//
+//        // Clean up
+//        reader.close();
+
+        JdbcCursorItemReader<Coffee> reader = jobService.reader();
+
+        // Assert
+        assertNotNull(reader, "Reader should not be null");
 
         // Act & Assert
-        assertNotNull(reader);
         reader.open(new ExecutionContext());
 
         Coffee coffee = reader.read();
-        assertNotNull(coffee);
-        assertEquals("Brand1", coffee.getBrand());
-        assertEquals("Origin1", coffee.getOrigin());
-        assertEquals("Characteristics1", coffee.getCharacteristics());
+        assertNotNull(coffee, "First coffee item should not be null");
+        // Add more specific assertions based on your data
+        assertNotNull(coffee.getBrand(), "Coffee brand should not be null");
+        assertNotNull(coffee.getOrigin(), "Coffee origin should not be null");
+        assertNotNull(coffee.getCharacteristics(), "Coffee characteristics should not be null");
+
+        // Test reading multiple items
+        for (int i = 0; i < 9; i++) {  // We've already read one, so read 9 more
+            Coffee nextCoffee = reader.read();
+            assertNotNull(nextCoffee, "Coffee item " + (i+2) + " should not be null");
+        }
+
+        // The 11th read should be null, as we've read all 10 items
+        assertNull(reader.read(), "11th read should be null, indicating end of data");
+
+        // Clean up
+        reader.close();
     }
 
     @Test

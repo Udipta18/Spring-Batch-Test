@@ -30,16 +30,18 @@ import java.util.Map;
 public class PostGresConfig {
 
     @Bean(name = "postgresDataSource")
+    @Primary
     public DataSource postgresDataSource(Environment env) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setUrl("jdbc:h2:mem:db2test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false");
+        dataSource.setUrl("jdbc:h2:mem:db2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false");
         dataSource.setUsername("sa");
         dataSource.setPassword("password");
         return dataSource;
     }
 
     @Bean(name = "postgresEntityManager")
+    @Primary
     public LocalContainerEntityManagerFactoryBean postgresEntityManager(
             @Qualifier("postgresDataSource") DataSource dataSource) {
 //        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
@@ -75,6 +77,7 @@ public class PostGresConfig {
     }
 
     @Bean(name = "postgresTransactionManager")
+    @Primary
     public JpaTransactionManager postgresTransactionManager(
             @Qualifier("postgresEntityManager") EntityManagerFactory entityManagerFactory) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
